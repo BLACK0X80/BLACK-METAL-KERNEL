@@ -1,0 +1,7 @@
+[package]
+name = "black_kernel"
+version = "0.1.0"
+edition = "2021"
+authors = ["BLACK0X80"]
+
+[dependencies]
