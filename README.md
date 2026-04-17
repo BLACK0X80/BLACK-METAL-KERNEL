@@ -9,7 +9,8 @@
 <br/>
 
 [![KERNEL](https://img.shields.io/badge/KERNEL-BARE_METAL-000000?style=for-the-badge&logo=linux&logoColor=FF0000&labelColor=111111)](https://github.com/BLACK0X80/BLACK-METAL-KERNEL)
-[![Architecture](https://img.shields.io/badge/ARCH-x86__64-000000?style=for-the-badge&logo=intel&logoColor=FF0000&labelColor=111111)](https://github.com/BLACK0X80/BLACK-METAL-KERNEL)
+[![Architect](https://img.shields.io/badge/ARCH-x86__64-000000?style=for-the-badge&logo=intel&logoColor=FF0000&labelColor=111111)](https://github.com/BLACK0X80/BLACK-METAL-KERNEL)
+[![Transmissions](https://img.shields.io/badge/Read-LIVE_SERIES-000000?style=for-the-badge&logo=gitbook&logoColor=FF0000&labelColor=111111)](https://black0x80.github.io/BLACK-METAL-KERNEL/BLACK)
 [![License](https://img.shields.io/badge/License-MIT-000000?style=for-the-badge&logo=balance-scale&logoColor=FF0000&labelColor=111111)](LICENSE)
 [![Language](https://img.shields.io/badge/Language-Rust-000000?style=for-the-badge&logo=rust&logoColor=FF0000&labelColor=111111)](https://github.com/BLACK0X80/BLACK-METAL-KERNEL)
 
@@ -23,7 +24,7 @@
 
 BLACK METAL KERNEL IS A RAW, ZERO-COST SYSTEMS ENGINEERING MANIFESTO. WRITTEN ENTIRELY IN RUST, IT FORCES HARDWARE TO ITS KNEES. THERE ARE NO COMFORT LAYERS. EVERY CYCLE IS ACCOUNTED FOR. EVERY MEMORY ALLOCATION IS FATAL IF MISHANDLED. THIS IS KERNEL DEVELOPMENT REDUCED TO ITS ABSOLUTE, BRUTAL CORE.
 
-[**SYSTEM ARCHITECTURE**](#system-architecture) • [**INITIALIZATION**](#initialization-sequence) • [**HARDWARE CONTROL**](#hardware-interfaces)
+[**READ LIVE TRANSMISSIONS AND TUTORIALS**](https://black0x80.github.io/BLACK-METAL-KERNEL/BLACK) • [**SYSTEM ARCHITECTURE**](#system-architecture) • [**HARDWARE CONTROL**](#hardware-interfaces)
 
 </div>
 
