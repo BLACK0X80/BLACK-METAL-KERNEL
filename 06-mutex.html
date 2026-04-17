@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>06 — the black_mutex // BLACK METAL KERNEL</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root { --bg: #080808; --bg2: #0f0f0f; --bg3: #141414; --red: #cc2020; --red2: #ff4040; --red3: #7a0f0f; --ink: #f0f0f0; --ink2: #888888; --border: #1e0808; --mono: 'Space Mono', monospace; --head: 'Syne', sans-serif; }
+  html, body { background: var(--bg); color: var(--ink); font-family: var(--head); -webkit-font-smoothing: antialiased; }
+  .art { max-width: 860px; margin: 0 auto; padding: 2rem 1.5rem 6rem; }
+  .nav-back { display: inline-flex; align-items: center; gap: 8px; font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; color: var(--ink2); text-decoration: none; text-transform: uppercase; margin-bottom: 3rem; transition: color 0.15s; }
+  .nav-back:hover { color: var(--red2); }
+  .art-subtitle { font-size: 13px; font-family: var(--mono); color: var(--red); letter-spacing: 0.08em; margin: 0 0 0.75rem; text-transform: uppercase; }
+  .art-title { font-size: clamp(28px, 5vw, 52px); font-weight: 800; line-height: 1.05; letter-spacing: -0.03em; color: var(--ink); margin: 0 0 0.75rem; text-transform: uppercase; }
+  .art-episode { font-family: var(--mono); font-size: 11px; color: var(--ink2); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 2.5rem; }
+  .tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 2.5rem; }
+  .tag { display: inline-block; font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; padding: 3px 8px; background: var(--bg2); border: 0.5px solid var(--border); border-radius: 3px; color: var(--ink2); text-transform: uppercase; }
+  .divider { width: 48px; height: 3px; background: var(--red); margin: 2.5rem 0; }
+  .section-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.2em; color: var(--red); text-transform: uppercase; margin: 0 0 0.75rem; }
+  .prose { font-family: var(--head); font-size: 16px; line-height: 1.8; color: var(--ink); margin: 0 0 1.5rem; }
+  .prose-block { border-left: 3px solid var(--red); padding-left: 1.25rem; margin: 2rem 0; }
+  
+  .pre-wrap { position: relative; }
+  .copy-btn { position: absolute; top: 0.5rem; right: 0.5rem; background: var(--bg3); border: 0.5px solid var(--border); color: var(--ink2); font-family: var(--mono); font-size: 10px; padding: 4px 8px; cursor: pointer; text-transform: uppercase; transition: all 0.15s; border-radius: 3px; letter-spacing: 0.1em; }
+  .copy-btn:hover { color: var(--red2); border-color: var(--red3); }
+  .copy-btn.copied { color: var(--bg); background: var(--red); border-color: var(--red); }
+
+  pre.rust { background: var(--bg2); border: 0.5px solid var(--border); border-left: 3px solid var(--red); border-radius: 0 6px 6px 0; padding: 1.25rem 1.5rem; overflow-x: auto; margin: 1.5rem 0 2.5rem; font-family: var(--mono); font-size: 13px; line-height: 1.7; color: var(--ink); tab-size: 4; }
+  .kw { color: var(--red); } .ty { color: var(--red2); } .fn-name { color: #cc3333; } .str { color: #ff4444; } .num { color: #ff8080; } .mac { color: #dd2222; } .attr { color: var(--ink2); font-style: italic; }
+  .note { font-family: var(--mono); font-size: 12px; color: var(--ink2); background: var(--bg2); border-radius: 4px; padding: 0.75rem 1rem; margin: 1rem 0; line-height: 1.6; }
+  .expand { border: 0.5px solid var(--border); border-left: 3px solid var(--red3); background: var(--bg2); border-radius: 0 6px 6px 0; padding: 1.1rem 1.4rem; margin: 0.5rem 0 2.5rem; font-family: var(--mono); font-size: 12.5px; line-height: 1.85; color: var(--ink2); }
+  .expand-label { font-size: 9px; letter-spacing: 0.24em; color: var(--red); text-transform: uppercase; margin-bottom: 0.7rem; display: block; }
+  .expand p { margin: 0 0 0.8rem; } .expand p:last-child { margin: 0; } .hl { color: var(--ink); font-weight: 700; }
+  .nav-episodes { display: flex; justify-content: space-between; align-items: center; margin-top: 4rem; padding-top: 2rem; border-top: 0.5px solid var(--border); gap: 1rem; flex-wrap: wrap; }
+  .nav-ep-link { font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; color: var(--ink2); text-decoration: none; text-transform: uppercase; transition: color 0.15s; }
+  .nav-ep-link:hover { color: var(--red2); }
+  .sig-line { font-family: var(--mono); font-size: 11px; color: var(--ink2); letter-spacing: 0.1em; margin-top: 4rem; border-top: 0.5px solid var(--border); padding-top: 1.5rem; }
+</style>
+</head>
+<body>
+<div class="art">
+  <a class="nav-back" href="index.html">← black metal kernel — series index</a>
+  <p class="art-subtitle">// black metal kernel — episode 06 of 08</p>
+  <h1 class="art-title">the black_mutex:<br>a lock that earns its existence</h1>
+  <p class="art-episode">// kernel programming in rust — zero-cost abstractions — no gc — no mercy</p>
+  <div class="tags">
+    <span class="tag">UnsafeCell</span>
+    <span class="tag">RAII</span>
+    <span class="tag">Drop</span>
+    <span class="tag">DerefMut</span>
+  </div>
+  <div class="divider"></div>
+  <p class="section-label">// 06 — the black mutex: bounding mutability safely</p>
+  <p class="prose">interior mutability in rust breaks the strict mutable borrowing rules by tunneling through a shared reference (`&T`). in kernel context, it is indispensable for sharing state like framebuffers and thread allocators across multiple cores. true interior mutability is built upon `UnsafeCell`—the only core primitive that legally opts out of standard immutability invariants.</p>
+  <p class="prose">our `BlackMutex` wraps an `UnsafeCell` alongside the `BlackSpinlock` from our foundation. we utilize the RAII (Resource Acquisition Is Initialization) pattern to guarantee release upon scope exit. access is rigidly bound by a `BlackMutexGuard`, avoiding dangling locks during mid-function panics or early returns.</p>
+
+<pre class="rust"><span class="kw">use</span> core::cell::<span class="ty">UnsafeCell</span>;
+<span class="kw">use</span> core::ops::{<span class="ty">Deref</span>, <span class="ty">DerefMut</span>};
+
+<span class="kw">pub struct</span> <span class="ty">BlackMutex</span>&lt;T&gt; {
+    black_lock: <span class="kw">crate</span>::sync::<span class="ty">BlackSpinlock</span>,
+    black_data: <span class="ty">UnsafeCell</span>&lt;T&gt;,
+}
+
+<span class="kw">unsafe impl</span>&lt;T: <span class="ty">Send</span>&gt; <span class="ty">Sync</span> <span class="kw">for</span> <span class="ty">BlackMutex</span>&lt;T&gt; {}
+<span class="kw">unsafe impl</span>&lt;T: <span class="ty">Send</span>&gt; <span class="ty">Send</span> <span class="kw">for</span> <span class="ty">BlackMutex</span>&lt;T&gt; {}
+
+<span class="kw">impl</span>&lt;T&gt; <span class="ty">BlackMutex</span>&lt;T&gt; {
+    <span class="kw">pub const fn</span> <span class="fn-name">black_new</span>(black_val: T) -> <span class="ty">Self</span> {
+        <span class="ty">Self</span> {
+            black_lock: <span class="kw">crate</span>::sync::<span class="ty">BlackSpinlock</span>::<span class="fn-name">black_new</span>(),
+            black_data: <span class="ty">UnsafeCell</span>::<span class="fn-name">new</span>(black_val),
+        }
+    }
+
+    <span class="kw">pub fn</span> <span class="fn-name">black_lock</span>(&<span class="kw">self</span>) -> <span class="ty">BlackMutexGuard</span>&lt;'_, T&gt; {
+        <span class="kw">self</span>.black_lock.<span class="fn-name">black_acquire</span>();
+        <span class="ty">BlackMutexGuard</span> {
+            black_mutex: <span class="kw">self</span>,
+        }
+    }
+}
+
+<span class="kw">pub struct</span> <span class="ty">BlackMutexGuard</span>&lt;'a, T&gt; {
+    black_mutex: &'a <span class="ty">BlackMutex</span>&lt;T&gt;,
+}
+
+<span class="kw">impl</span>&lt;T&gt; <span class="ty">Deref</span> <span class="kw">for</span> <span class="ty">BlackMutexGuard</span>&lt;'_, T&gt; {
+    <span class="kw">type</span> <span class="ty">Target</span> = T;
+    <span class="kw">fn</span> <span class="fn-name">deref</span>(&<span class="kw">self</span>) -> &T {
+        <span class="kw">unsafe</span> { &*<span class="kw">self</span>.black_mutex.black_data.<span class="fn-name">get</span>() }
+    }
+}
+
+<span class="kw">impl</span>&lt;T&gt; <span class="ty">DerefMut</span> <span class="kw">for</span> <span class="ty">BlackMutexGuard</span>&lt;'_, T&gt; {
+    <span class="kw">fn</span> <span class="fn-name">deref_mut</span>(&<span class="kw">mut</span> <span class="kw">self</span>) -> &<span class="kw">mut</span> T {
+        <span class="kw">unsafe</span> { &<span class="kw">mut</span> *<span class="kw">self</span>.black_mutex.black_data.<span class="fn-name">get</span>() }
+    }
+}
+
+<span class="kw">impl</span>&lt;T&gt; <span class="ty">Drop</span> <span class="kw">for</span> <span class="ty">BlackMutexGuard</span>&lt;'_, T&gt; {
+    <span class="kw">fn</span> <span class="fn-name">drop</span>(&<span class="kw">mut</span> <span class="kw">self</span>) {
+        <span class="kw">self</span>.black_mutex.black_lock.<span class="fn-name">black_release</span>();
+    }
+}</pre>
+
+  <div class="expand">
+    <span class="expand-label">// expanded — UnsafeCell, sync constraints, and drop trait semantics</span>
+    <p>in conventional programming, a developer remembers to call `unlock()` at the bottom of the function. if an unexpected error handles a return midway, or the thread panics, the lock hangs globally. this creates fatal deadlocks. rust’s <span class="hl">Drop</span> trait intercepts the structure's lifetime end. whenever the `BlackMutexGuard` moves out of namespace scope, whether gracefully or through execution unwind, <span class="hl">drop()</span> fires and invokes our spinlock release. this shifts correctness out of human hands into structural guarantee.</p>
+    <p><span class="hl">UnsafeCell</span> forms the heart of this pattern. you cannot pass a mutable reference `&mut T` between threads. you pass a shared reference `&BlackMutex<T>`. inside `DerefMut`, `UnsafeCell::get()` produces a raw pointer `*mut T` matching the inner value, which we manually reconstruct into a safe `&mut T`. we guarantee memory safety here specifically because we mathematically surround this access with the atomic acquisition of our `black_lock`. if you bypass the guard, you bypass lock safety.</p>
+  </div>
+  
+  <div class="nav-episodes">
+    <a class="nav-ep-link" href="05-memory-layout.html">← 05 — memory layout</a>
+    <a class="nav-ep-link" href="07-page-table.html">07 — the page table →</a>
+  </div>
+  <p class="sig-line">// 06 / 08 — black_ptr owns its truth — BLACK0X80</p>
+</div>
+<script>
+  document.querySelectorAll('pre.rust').forEach(pre => {
+    const wrap = document.createElement('div');
+    wrap.className = 'pre-wrap';
+    pre.parentNode.insertBefore(wrap, pre);
+    wrap.appendChild(pre);
+    const btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.textContent = 'copy';
+    wrap.appendChild(btn);
+    btn.addEventListener('click', () => {
+      navigator.clipboard.writeText(pre.textContent).then(() => {
+        btn.textContent = 'copied';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = 'copy'; btn.classList.remove('copied'); }, 2000);
+      });
+    });
+  });
+</script>
+</body>
+</html>

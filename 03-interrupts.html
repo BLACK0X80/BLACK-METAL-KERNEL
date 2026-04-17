@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>03 — interrupt handling // BLACK METAL KERNEL</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root { --bg: #080808; --bg2: #0f0f0f; --bg3: #141414; --red: #cc2020; --red2: #ff4040; --red3: #7a0f0f; --ink: #f0f0f0; --ink2: #888888; --border: #1e0808; --mono: 'Space Mono', monospace; --head: 'Syne', sans-serif; }
+  html, body { background: var(--bg); color: var(--ink); font-family: var(--head); -webkit-font-smoothing: antialiased; }
+  .art { max-width: 860px; margin: 0 auto; padding: 2rem 1.5rem 6rem; }
+  .nav-back { display: inline-flex; align-items: center; gap: 8px; font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; color: var(--ink2); text-decoration: none; text-transform: uppercase; margin-bottom: 3rem; transition: color 0.15s; }
+  .nav-back:hover { color: var(--red2); }
+  .art-subtitle { font-size: 13px; font-family: var(--mono); color: var(--red); letter-spacing: 0.08em; margin: 0 0 0.75rem; text-transform: uppercase; }
+  .art-title { font-size: clamp(28px, 5vw, 52px); font-weight: 800; line-height: 1.05; letter-spacing: -0.03em; color: var(--ink); margin: 0 0 0.75rem; text-transform: uppercase; }
+  .art-episode { font-family: var(--mono); font-size: 11px; color: var(--ink2); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 2.5rem; }
+  .tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 2.5rem; }
+  .tag { display: inline-block; font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; padding: 3px 8px; background: var(--bg2); border: 0.5px solid var(--border); border-radius: 3px; color: var(--ink2); text-transform: uppercase; }
+  .divider { width: 48px; height: 3px; background: var(--red); margin: 2.5rem 0; }
+  .section-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.2em; color: var(--red); text-transform: uppercase; margin: 0 0 0.75rem; }
+  .prose { font-family: var(--head); font-size: 16px; line-height: 1.8; color: var(--ink); margin: 0 0 1.5rem; }
+  .prose-block { border-left: 3px solid var(--red); padding-left: 1.25rem; margin: 2rem 0; }
+  
+  .pre-wrap { position: relative; }
+  .copy-btn { position: absolute; top: 0.5rem; right: 0.5rem; background: var(--bg3); border: 0.5px solid var(--border); color: var(--ink2); font-family: var(--mono); font-size: 10px; padding: 4px 8px; cursor: pointer; text-transform: uppercase; transition: all 0.15s; border-radius: 3px; letter-spacing: 0.1em; }
+  .copy-btn:hover { color: var(--red2); border-color: var(--red3); }
+  .copy-btn.copied { color: var(--bg); background: var(--red); border-color: var(--red); }
+
+  pre.rust { background: var(--bg2); border: 0.5px solid var(--border); border-left: 3px solid var(--red); border-radius: 0 6px 6px 0; padding: 1.25rem 1.5rem; overflow-x: auto; margin: 1.5rem 0 2.5rem; font-family: var(--mono); font-size: 13px; line-height: 1.7; color: var(--ink); tab-size: 4; }
+  .kw { color: var(--red); } .ty { color: var(--red2); } .fn-name { color: #cc3333; } .str { color: #ff4444; } .num { color: #ff8080; } .mac { color: #dd2222; } .attr { color: var(--ink2); font-style: italic; }
+  .note { font-family: var(--mono); font-size: 12px; color: var(--ink2); background: var(--bg2); border-radius: 4px; padding: 0.75rem 1rem; margin: 1rem 0; line-height: 1.6; }
+  .expand { border: 0.5px solid var(--border); border-left: 3px solid var(--red3); background: var(--bg2); border-radius: 0 6px 6px 0; padding: 1.1rem 1.4rem; margin: 0.5rem 0 2.5rem; font-family: var(--mono); font-size: 12.5px; line-height: 1.85; color: var(--ink2); }
+  .expand-label { font-size: 9px; letter-spacing: 0.24em; color: var(--red); text-transform: uppercase; margin-bottom: 0.7rem; display: block; }
+  .expand p { margin: 0 0 0.8rem; } .expand p:last-child { margin: 0; } .hl { color: var(--ink); font-weight: 700; }
+  .nav-episodes { display: flex; justify-content: space-between; align-items: center; margin-top: 4rem; padding-top: 2rem; border-top: 0.5px solid var(--border); gap: 1rem; flex-wrap: wrap; }
+  .nav-ep-link { font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; color: var(--ink2); text-decoration: none; text-transform: uppercase; transition: color 0.15s; }
+  .nav-ep-link:hover { color: var(--red2); }
+  .sig-line { font-family: var(--mono); font-size: 11px; color: var(--ink2); letter-spacing: 0.1em; margin-top: 4rem; border-top: 0.5px solid var(--border); padding-top: 1.5rem; }
+</style>
+</head>
+<body>
+<div class="art">
+  <a class="nav-back" href="index.html">← black metal kernel — series index</a>
+  <p class="art-subtitle">// black metal kernel — episode 03 of 08</p>
+  <h1 class="art-title">interrupt handling:<br>when hardware screams at you</h1>
+  <p class="art-episode">// kernel programming in rust — zero-cost abstractions — no gc — no mercy</p>
+  <div class="tags">
+    <span class="tag">IDT</span>
+    <span class="tag">naked fn</span>
+    <span class="tag">iretq</span>
+    <span class="tag">x86-64</span>
+    <span class="tag">exceptions</span>
+  </div>
+  <div class="divider"></div>
+  <p class="section-label">// 03 — interrupt handling: context preservation</p>
+  <p class="prose">an interrupt is sudden death for a careless kernel. the cpu forcibly halts the current instruction stream, pushes a minimal state frame onto the stack, and transfers execution to your handler. if you do not perfectly save and restore the interrupted state before returning, you corrupt the target thread permanently. rust's safety guarantees cannot prevent you from returning with the wrong register values. `naked` functions ensure the compiler does not emit standard C ABI prologues or epilogues, giving you raw control over the exact stack frame.</p>
+  <p class="prose">handling hardware exceptions correctly requires mapping the cpu's push mechanisms directly to structural types in rust using `repr(C)`. there is no room for padding errors. the hardware expects the Interrupt Descriptor Table (IDT) to be bit-perfect. every handler must acknowledge the interrupt using an End-Of-Interrupt (EOI) signal, or the local APIC will never interrupt that core again.</p>
+
+<pre class="rust"><span class="attr">#![feature(naked_functions)]</span>
+
+<span class="attr">#[repr(C)]</span>
+<span class="attr">#[derive(Debug, Clone, Copy)]</span>
+<span class="kw">pub struct</span> <span class="ty">BlackInterruptFrame</span> {
+    <span class="kw">pub</span> black_rip:    <span class="ty">u64</span>,
+    <span class="kw">pub</span> black_cs:     <span class="ty">u64</span>,
+    <span class="kw">pub</span> black_rflags: <span class="ty">u64</span>,
+    <span class="kw">pub</span> black_rsp:    <span class="ty">u64</span>,
+    <span class="kw">pub</span> black_ss:     <span class="ty">u64</span>,
+}
+
+<span class="attr">#[naked]</span>
+<span class="kw">pub unsafe extern</span> <span class="str">"C"</span> <span class="kw">fn</span> <span class="fn-name">black_page_fault_handler</span>() {
+    core::arch::<span class="mac">asm!</span>(
+        <span class="str">"push rbp"</span>,
+        <span class="str">"push r15"</span>,
+        <span class="str">"push r14"</span>,
+        <span class="str">"push r13"</span>,
+        <span class="str">"push r12"</span>,
+        <span class="str">"push r11"</span>,
+        <span class="str">"push r10"</span>,
+        <span class="str">"push r9"</span>,
+        <span class="str">"push r8"</span>,
+        <span class="str">"push rdi"</span>,
+        <span class="str">"push rsi"</span>,
+        <span class="str">"push rdx"</span>,
+        <span class="str">"push rcx"</span>,
+        <span class="str">"push rbx"</span>,
+        <span class="str">"push rax"</span>,
+        <span class="str">"mov rdi, rsp"</span>,
+        <span class="str">"call black_page_fault_router"</span>,
+        <span class="str">"pop rax"</span>,
+        <span class="str">"pop rbx"</span>,
+        <span class="str">"pop rcx"</span>,
+        <span class="str">"pop rdx"</span>,
+        <span class="str">"pop rsi"</span>,
+        <span class="str">"pop rdi"</span>,
+        <span class="str">"pop r8"</span>,
+        <span class="str">"pop r9"</span>,
+        <span class="str">"pop r10"</span>,
+        <span class="str">"pop r11"</span>,
+        <span class="str">"pop r12"</span>,
+        <span class="str">"pop r13"</span>,
+        <span class="str">"pop r14"</span>,
+        <span class="str">"pop r15"</span>,
+        <span class="str">"pop rbp"</span>,
+        <span class="str">"add rsp, 8"</span>,
+        <span class="str">"iretq"</span>,
+        <span class="attr">options</span>(<span class="kw">noreturn</span>)
+    );
+}
+
+<span class="attr">#[no_mangle]</span>
+<span class="kw">extern</span> <span class="str">"C"</span> <span class="kw">fn</span> <span class="fn-name">black_page_fault_router</span>(black_frame: *<span class="kw">const</span> <span class="ty">BlackInterruptFrame</span>) {
+    <span class="kw">let</span> black_cr2: <span class="ty">u64</span>;
+    <span class="kw">unsafe</span> {
+        core::arch::<span class="mac">asm!</span>(<span class="str">"mov {}, cr2"</span>, out(<span class="kw">reg</span>) black_cr2);
+    }
+    <span class="kw">if</span> black_cr2 == <span class="num">0</span> {
+        <span class="mac">panic!</span>(<span class="str">"black ptr fault"</span>);
+    }
+}</pre>
+
+  <div class="expand">
+    <span class="expand-label">// expanded — naked functions, calling conventions, and iretq</span>
+    <p>when a hardware interrupt occurs on x86-64, the cpu unconditionally pushes the instruction pointer (`RIP`), code segment (`CS`), and flags (`RFLAGS`) onto the stack. if a privilege level change occurred, it also pushes the stack pointer (`RSP`) and stack segment (`SS`). this stack frame corresponds exactly to our <span class="hl">BlackInterruptFrame</span> struct.</p>
+    <p>however, normal rust functions cannot be directly used as interrupt handlers because rust functions adhere to standard calling conventions (like the C ABI) which assume the processor is in a normal state. they generate "prologue" code that modifies the stack pointer before executing the function logic. to prevent this, we mark the handler as <span class="hl">#[naked]</span>. a naked function contains absolutely no compiler-generated setup or teardown. it is a raw sequence of assembly instructions.</p>
+    <p>in the assembly block, we manually save all general-purpose registers to the stack. this preserves the execution state of whatever code was abruptly halted by the hardware. we then execute <span class="hl">"mov rdi, rsp"</span>. in the System V AMD64 ABI, the first argument to a function is passed in the `RDI` register. by moving the stack pointer into `RDI`, we are passing a pointer to the saved register stack as the first argument to <span class="hl">black_page_fault_router</span>, which receives it cleanly as `black_frame`.</p>
+    <p>finally, the <span class="hl">iretq</span> instruction is executed. it does not just return; it forcefully pops the <span class="hl">RIP, CS, and RFLAGS</span> that the cpu pushed originally, atomically restoring both the instruction pointer and the privilege level. a standard `ret` instruction would crash the machine. the cpu resumes exactly as if nothing happened.</p>
+  </div>
+  
+  <div class="nav-episodes">
+    <a class="nav-ep-link" href="02-allocator.html">← 02 — custom allocator</a>
+    <a class="nav-ep-link" href="04-simd.html">04 — simd memory →</a>
+  </div>
+  <p class="sig-line">// 03 / 08 — black_ptr owns its truth — BLACK0X80</p>
+</div>
+<script>
+  document.querySelectorAll('pre.rust').forEach(pre => {
+    const wrap = document.createElement('div');
+    wrap.className = 'pre-wrap';
+    pre.parentNode.insertBefore(wrap, pre);
+    wrap.appendChild(pre);
+    const btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.textContent = 'copy';
+    wrap.appendChild(btn);
+    btn.addEventListener('click', () => {
+      navigator.clipboard.writeText(pre.textContent).then(() => {
+        btn.textContent = 'copied';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = 'copy'; btn.classList.remove('copied'); }, 2000);
+      });
+    });
+  });
+</script>
+</body>
+</html>

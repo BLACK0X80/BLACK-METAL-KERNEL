@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>04 — simd memory operations // BLACK METAL KERNEL</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root { --bg: #080808; --bg2: #0f0f0f; --bg3: #141414; --red: #cc2020; --red2: #ff4040; --red3: #7a0f0f; --ink: #f0f0f0; --ink2: #888888; --border: #1e0808; --mono: 'Space Mono', monospace; --head: 'Syne', sans-serif; }
+  html, body { background: var(--bg); color: var(--ink); font-family: var(--head); -webkit-font-smoothing: antialiased; }
+  .art { max-width: 860px; margin: 0 auto; padding: 2rem 1.5rem 6rem; }
+  .nav-back { display: inline-flex; align-items: center; gap: 8px; font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; color: var(--ink2); text-decoration: none; text-transform: uppercase; margin-bottom: 3rem; transition: color 0.15s; }
+  .nav-back:hover { color: var(--red2); }
+  .art-subtitle { font-size: 13px; font-family: var(--mono); color: var(--red); letter-spacing: 0.08em; margin: 0 0 0.75rem; text-transform: uppercase; }
+  .art-title { font-size: clamp(28px, 5vw, 52px); font-weight: 800; line-height: 1.05; letter-spacing: -0.03em; color: var(--ink); margin: 0 0 0.75rem; text-transform: uppercase; }
+  .art-episode { font-family: var(--mono); font-size: 11px; color: var(--ink2); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 2.5rem; }
+  .tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 2.5rem; }
+  .tag { display: inline-block; font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; padding: 3px 8px; background: var(--bg2); border: 0.5px solid var(--border); border-radius: 3px; color: var(--ink2); text-transform: uppercase; }
+  .divider { width: 48px; height: 3px; background: var(--red); margin: 2.5rem 0; }
+  .section-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.2em; color: var(--red); text-transform: uppercase; margin: 0 0 0.75rem; }
+  .prose { font-family: var(--head); font-size: 16px; line-height: 1.8; color: var(--ink); margin: 0 0 1.5rem; }
+  .prose-block { border-left: 3px solid var(--red); padding-left: 1.25rem; margin: 2rem 0; }
+  
+  .pre-wrap { position: relative; }
+  .copy-btn { position: absolute; top: 0.5rem; right: 0.5rem; background: var(--bg3); border: 0.5px solid var(--border); color: var(--ink2); font-family: var(--mono); font-size: 10px; padding: 4px 8px; cursor: pointer; text-transform: uppercase; transition: all 0.15s; border-radius: 3px; letter-spacing: 0.1em; }
+  .copy-btn:hover { color: var(--red2); border-color: var(--red3); }
+  .copy-btn.copied { color: var(--bg); background: var(--red); border-color: var(--red); }
+
+  pre.rust { background: var(--bg2); border: 0.5px solid var(--border); border-left: 3px solid var(--red); border-radius: 0 6px 6px 0; padding: 1.25rem 1.5rem; overflow-x: auto; margin: 1.5rem 0 2.5rem; font-family: var(--mono); font-size: 13px; line-height: 1.7; color: var(--ink); tab-size: 4; }
+  .kw { color: var(--red); } .ty { color: var(--red2); } .fn-name { color: #cc3333; } .str { color: #ff4444; } .num { color: #ff8080; } .mac { color: #dd2222; } .attr { color: var(--ink2); font-style: italic; }
+  .note { font-family: var(--mono); font-size: 12px; color: var(--ink2); background: var(--bg2); border-radius: 4px; padding: 0.75rem 1rem; margin: 1rem 0; line-height: 1.6; }
+  .expand { border: 0.5px solid var(--border); border-left: 3px solid var(--red3); background: var(--bg2); border-radius: 0 6px 6px 0; padding: 1.1rem 1.4rem; margin: 0.5rem 0 2.5rem; font-family: var(--mono); font-size: 12.5px; line-height: 1.85; color: var(--ink2); }
+  .expand-label { font-size: 9px; letter-spacing: 0.24em; color: var(--red); text-transform: uppercase; margin-bottom: 0.7rem; display: block; }
+  .expand p { margin: 0 0 0.8rem; } .expand p:last-child { margin: 0; } .hl { color: var(--ink); font-weight: 700; }
+  .nav-episodes { display: flex; justify-content: space-between; align-items: center; margin-top: 4rem; padding-top: 2rem; border-top: 0.5px solid var(--border); gap: 1rem; flex-wrap: wrap; }
+  .nav-ep-link { font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; color: var(--ink2); text-decoration: none; text-transform: uppercase; transition: color 0.15s; }
+  .nav-ep-link:hover { color: var(--red2); }
+  .sig-line { font-family: var(--mono); font-size: 11px; color: var(--ink2); letter-spacing: 0.1em; margin-top: 4rem; border-top: 0.5px solid var(--border); padding-top: 1.5rem; }
+</style>
+</head>
+<body>
+<div class="art">
+  <a class="nav-back" href="index.html">← black metal kernel — series index</a>
+  <p class="art-subtitle">// black metal kernel — episode 04 of 08</p>
+  <h1 class="art-title">SIMD memory operations:<br>asm! on the critical path</h1>
+  <p class="art-episode">// kernel programming in rust — zero-cost abstractions — no gc — no mercy</p>
+  <div class="tags">
+    <span class="tag">AVX2</span>
+    <span class="tag">movnti</span>
+    <span class="tag">sfence</span>
+    <span class="tag">align(32)</span>
+    <span class="tag">cache-bypass</span>
+  </div>
+  <div class="divider"></div>
+  <p class="section-label">// 04 — simd memory: avoiding cache pollution</p>
+  <p class="prose">clearing or copying large contiguous memory regions in the kernel is a bottleneck that defines system latency. standard `memset` leverages standard byte loops that poison the L1/L2 caches with transient data, pushing out instructions and actual operational memory. doing this correctly means bypassing the cache completely.</p>
+  <p class="prose">on x86-64, AVX2 non-temporal stores (`movnti` or `vmovntdq`) write directly to main memory. they are destructive to performance if you read from them immediately, but for zeroing out page allocations or flushing buffers, they ensure the cache hierarchy remains undisturbed. combining inline assembly `asm!` in rust with the strict layout control of `align(32)` enforces perfect hardware bounds required for AVX operations.</p>
+
+<pre class="rust"><span class="attr">#[repr(C, align(32))]</span>
+<span class="kw">pub struct</span> <span class="ty">BlackAlignedBuffer</span> {
+    black_data: [<span class="ty">u8</span>; <span class="num">4096</span>],
+}
+
+<span class="kw">impl</span> <span class="ty">BlackAlignedBuffer</span> {
+    <span class="kw">pub fn</span> <span class="fn-name">black_zero_nt</span>(&<span class="kw">mut</span> <span class="kw">self</span>) {
+        <span class="kw">let</span> black_ptr = <span class="kw">self</span>.black_data.<span class="fn-name">as_mut_ptr</span>() <span class="kw">as</span> *<span class="kw">mut</span> <span class="ty">u8</span>;
+        <span class="kw">let</span> black_len = <span class="kw">self</span>.black_data.<span class="fn-name">len</span>() / <span class="num">32</span>;
+
+        <span class="kw">unsafe</span> {
+            core::arch::<span class="mac">asm!</span>(
+                <span class="str">"vpxor ymm0, ymm0, ymm0"</span>,
+                <span class="str">"2:"</span>,
+                <span class="str">"vmovntdq ymmword ptr [{0}], ymm0"</span>,
+                <span class="str">"add {0}, 32"</span>,
+                <span class="str">"dec {1}"</span>,
+                <span class="str">"jnz 2b"</span>,
+                <span class="str">"sfence"</span>,
+                inout(<span class="kw">reg</span>) black_ptr => _,
+                inout(<span class="kw">reg</span>) black_len => _,
+                out(<span class="str">"ymm0"</span>) _,
+                <span class="attr">options</span>(<span class="kw">nostack</span>, <span class="kw">preserves_flags</span>)
+            );
+        }
+    }
+}</pre>
+
+  <div class="expand">
+    <span class="expand-label">// expanded — AVX2, non-temporal stores, and alignment</span>
+    <p>a standard write instruction pushes data into the CPU's L1 cache. if the cache is full, existing lines are evicted. when a kernel zeroes a 4096-byte page before handing it to a user process, that write will evict 4096 bytes of potentially useful data from L1. because the kernel never intends to read that newly zeroed page itself, caching it is a <span class="hl">cache pollution</span> event.</p>
+    <p>the <span class="hl">vmovntdq</span> (Vector Move Non-Temporal Double Quadword) instruction solves this. "Non-temporal" hints to the processor that the data will not be accessed again soon. the CPU writes the 32-byte `YMM` register directly to the memory controller's write-combining buffer, entirely bypassing the L1/L2/L3 cache hierarchy. the cache survives intact.</p>
+    <p>to safely use `vmovntdq`, the destination memory address <span class="hl">must be 32-byte aligned</span>. if it is not, the CPU immediately throws a general protection fault (#GP). we utilize rust's <span class="hl">#[repr(C, align(32))]</span> to enforce that every instance of <span class="hl">BlackAlignedBuffer</span> naturally aligns in memory, satisfying the hardware's strict demands at compile time.</p>
+    <p>the <span class="hl">sfence</span> (Store Fence) instruction at the end is absolutely mandatory. because non-temporal stores bypass the standard cache coherency mechanisms, they are weakly ordered. `sfence` forces the memory controller to drain all write-combining buffers to main memory before any subsequent load or store operations execute, ensuring global visibility.</p>
+  </div>
+  
+  <div class="nav-episodes">
+    <a class="nav-ep-link" href="03-interrupts.html">← 03 — interrupt handling</a>
+    <a class="nav-ep-link" href="05-memory-layout.html">05 — memory layout →</a>
+  </div>
+  <p class="sig-line">// 04 / 08 — black_ptr owns its truth — BLACK0X80</p>
+</div>
+<script>
+  document.querySelectorAll('pre.rust').forEach(pre => {
+    const wrap = document.createElement('div');
+    wrap.className = 'pre-wrap';
+    pre.parentNode.insertBefore(wrap, pre);
+    wrap.appendChild(pre);
+    const btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.textContent = 'copy';
+    wrap.appendChild(btn);
+    btn.addEventListener('click', () => {
+      navigator.clipboard.writeText(pre.textContent).then(() => {
+        btn.textContent = 'copied';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = 'copy'; btn.classList.remove('copied'); }, 2000);
+      });
+    });
+  });
+</script>
+</body>
+</html>

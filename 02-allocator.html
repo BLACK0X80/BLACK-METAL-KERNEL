@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>02 — custom allocator // BLACK METAL KERNEL</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root { --bg: #080808; --bg2: #0f0f0f; --bg3: #141414; --red: #cc2020; --red2: #ff4040; --red3: #7a0f0f; --ink: #f0f0f0; --ink2: #888888; --border: #1e0808; --mono: 'Space Mono', monospace; --head: 'Syne', sans-serif; }
+  html, body { background: var(--bg); color: var(--ink); font-family: var(--head); -webkit-font-smoothing: antialiased; }
+  .art { max-width: 860px; margin: 0 auto; padding: 2rem 1.5rem 6rem; }
+  .nav-back { display: inline-flex; align-items: center; gap: 8px; font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; color: var(--ink2); text-decoration: none; text-transform: uppercase; margin-bottom: 3rem; transition: color 0.15s; }
+  .nav-back:hover { color: var(--red2); }
+  .art-subtitle { font-size: 13px; font-family: var(--mono); color: var(--red); letter-spacing: 0.08em; margin: 0 0 0.75rem; text-transform: uppercase; }
+  .art-title { font-size: clamp(28px, 5vw, 52px); font-weight: 800; line-height: 1.05; letter-spacing: -0.03em; color: var(--ink); margin: 0 0 0.75rem; text-transform: uppercase; }
+  .art-episode { font-family: var(--mono); font-size: 11px; color: var(--ink2); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 2.5rem; }
+  .tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 2.5rem; }
+  .tag { display: inline-block; font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; padding: 3px 8px; background: var(--bg2); border: 0.5px solid var(--border); border-radius: 3px; color: var(--ink2); text-transform: uppercase; }
+  .divider { width: 48px; height: 3px; background: var(--red); margin: 2.5rem 0; }
+  .section-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.2em; color: var(--red); text-transform: uppercase; margin: 0 0 0.75rem; }
+  .prose { font-family: var(--head); font-size: 16px; line-height: 1.8; color: var(--ink); margin: 0 0 1.5rem; }
+  .prose-block { border-left: 3px solid var(--red); padding-left: 1.25rem; margin: 2rem 0; }
+  
+  .pre-wrap { position: relative; }
+  .copy-btn { position: absolute; top: 0.5rem; right: 0.5rem; background: var(--bg3); border: 0.5px solid var(--border); color: var(--ink2); font-family: var(--mono); font-size: 10px; padding: 4px 8px; cursor: pointer; text-transform: uppercase; transition: all 0.15s; border-radius: 3px; letter-spacing: 0.1em; }
+  .copy-btn:hover { color: var(--red2); border-color: var(--red3); }
+  .copy-btn.copied { color: var(--bg); background: var(--red); border-color: var(--red); }
+
+  pre.rust { background: var(--bg2); border: 0.5px solid var(--border); border-left: 3px solid var(--red); border-radius: 0 6px 6px 0; padding: 1.25rem 1.5rem; overflow-x: auto; margin: 1.5rem 0 2.5rem; font-family: var(--mono); font-size: 13px; line-height: 1.7; color: var(--ink); tab-size: 4; }
+  .kw { color: var(--red); } .ty { color: var(--red2); } .fn-name { color: #cc3333; } .str { color: #ff4444; } .num { color: #ff8080; } .mac { color: #dd2222; } .attr { color: var(--ink2); font-style: italic; }
+  .note { font-family: var(--mono); font-size: 12px; color: var(--ink2); background: var(--bg2); border-radius: 4px; padding: 0.75rem 1rem; margin: 1rem 0; line-height: 1.6; }
+  .expand { border: 0.5px solid var(--border); border-left: 3px solid var(--red3); background: var(--bg2); border-radius: 0 6px 6px 0; padding: 1.1rem 1.4rem; margin: 0.5rem 0 2.5rem; font-family: var(--mono); font-size: 12.5px; line-height: 1.85; color: var(--ink2); }
+  .expand-label { font-size: 9px; letter-spacing: 0.24em; color: var(--red); text-transform: uppercase; margin-bottom: 0.7rem; display: block; }
+  .expand p { margin: 0 0 0.8rem; } .expand p:last-child { margin: 0; } .hl { color: var(--ink); font-weight: 700; }
+  .nav-episodes { display: flex; justify-content: space-between; align-items: center; margin-top: 4rem; padding-top: 2rem; border-top: 0.5px solid var(--border); gap: 1rem; flex-wrap: wrap; }
+  .nav-ep-link { font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; color: var(--ink2); text-decoration: none; text-transform: uppercase; transition: color 0.15s; }
+  .nav-ep-link:hover { color: var(--red2); }
+  .sig-line { font-family: var(--mono); font-size: 11px; color: var(--ink2); letter-spacing: 0.1em; margin-top: 4rem; border-top: 0.5px solid var(--border); padding-top: 1.5rem; }
+</style>
+</head>
+<body>
+<div class="art">
+  <a class="nav-back" href="index.html">← black metal kernel — series index</a>
+  <p class="art-subtitle">// black metal kernel — episode 02 of 08</p>
+  <h1 class="art-title">custom allocator:<br>owning the heap from birth</h1>
+  <p class="art-episode">// kernel programming in rust — zero-cost abstractions — no gc — no mercy</p>
+  <div class="tags">
+    <span class="tag">GlobalAlloc</span>
+    <span class="tag">AtomicUsize</span>
+    <span class="tag">bump alloc</span>
+    <span class="tag">lock-free</span>
+    <span class="tag">align(4096)</span>
+    <span class="tag">SMP</span>
+  </div>
+  <div class="divider"></div>
+  <p class="section-label">// 02 — custom allocator: owning the heap from birth</p>
+  <p class="prose">the standard heap allocator is a comfortable lie built on decades of compromises — it does not know your access patterns it does not know your alignment requirements it does not know that you will allocate ten thousand 64-byte objects and never free them until shutdown. in the kernel context, ignorance is the antagonist of performance. you write the allocator that fits the workload exactly. achieving lock-free O(1) allocation requires leveraging atomic operations and avoiding global locks that cause thread starvation when multiple cores attempt to retrieve memory simultaneously.</p>
+  <p class="prose">by implementing rust's `GlobalAlloc` trait, we map the entire language's dynamic allocation features — `Box`, `Vec`, `String` — directly to our custom memory management policy. our bump allocator demonstrates brutal efficiency. it never frees. it simply increments a pointer forward, relying on atomic compare-and-swap (CAS) to stay entirely thread-safe without ever acquiring a lock.</p>
+<pre class="rust"><span class="attr">#![feature(allocator_api)]</span>
+
+<span class="kw">use</span> core::alloc::{<span class="ty">GlobalAlloc</span>, <span class="ty">Layout</span>};
+<span class="kw">use</span> core::sync::atomic::{<span class="ty">AtomicUsize</span>, <span class="ty">Ordering</span>};
+
+<span class="kw">const</span> <span class="ty">BLACK_HEAP_SIZE</span>: <span class="ty">usize</span> = <span class="num">1024</span> * <span class="num">1024</span> * <span class="num">4</span>;
+
+<span class="attr">#[repr(align(4096))]</span>
+<span class="kw">struct</span> <span class="ty">BlackHeap</span>([<span class="ty">u8</span>; <span class="ty">BLACK_HEAP_SIZE</span>]);
+
+<span class="kw">static</span> <span class="kw">mut</span> black_heap: <span class="ty">BlackHeap</span> = <span class="ty">BlackHeap</span>([<span class="num">0u8</span>; <span class="ty">BLACK_HEAP_SIZE</span>]);
+<span class="kw">static</span> black_offset: <span class="ty">AtomicUsize</span> = <span class="ty">AtomicUsize</span>::<span class="fn-name">new</span>(<span class="num">0</span>);
+
+<span class="kw">pub struct</span> <span class="ty">BlackBumpAllocator</span>;
+
+<span class="kw">unsafe impl</span> <span class="ty">GlobalAlloc</span> <span class="kw">for</span> <span class="ty">BlackBumpAllocator</span> {
+    <span class="kw">unsafe fn</span> <span class="fn-name">alloc</span>(&<span class="kw">self</span>, black_layout: <span class="ty">Layout</span>) -> *<span class="kw">mut</span> <span class="ty">u8</span> {
+        <span class="kw">let</span> black_align = black_layout.<span class="fn-name">align</span>();
+        <span class="kw">let</span> black_size  = black_layout.<span class="fn-name">size</span>();
+
+        <span class="kw">loop</span> {
+            <span class="kw">let</span> black_current = black_offset.<span class="fn-name">load</span>(<span class="ty">Ordering</span>::<span class="ty">Relaxed</span>);
+            <span class="kw">let</span> black_aligned = (black_current + black_align - <span class="num">1</span>) & !(black_align - <span class="num">1</span>);
+            <span class="kw">let</span> black_next    = black_aligned + black_size;
+
+            <span class="kw">if</span> black_next > <span class="ty">BLACK_HEAP_SIZE</span> {
+                <span class="kw">return</span> core::ptr::<span class="fn-name">null_mut</span>();
+            }
+
+            <span class="kw">if</span> black_offset
+                .<span class="fn-name">compare_exchange_weak</span>(
+                    black_current,
+                    black_next,
+                    <span class="ty">Ordering</span>::<span class="ty">AcqRel</span>,
+                    <span class="ty">Ordering</span>::<span class="ty">Relaxed</span>,
+                )
+                .<span class="fn-name">is_ok</span>()
+            {
+                <span class="kw">return</span> black_heap.<span class="num">0</span>.<span class="fn-name">as_mut_ptr</span>().<span class="fn-name">add</span>(black_aligned) <span class="kw">as</span> *<span class="kw">mut</span> <span class="ty">u8</span>;
+            }
+        }
+    }
+
+    <span class="kw">unsafe fn</span> <span class="fn-name">dealloc</span>(&<span class="kw">self</span>, _black_ptr: *<span class="kw">mut</span> <span class="ty">u8</span>, _black_layout: <span class="ty">Layout</span>) {}
+}
+
+<span class="attr">#[global_allocator]</span>
+<span class="kw">static</span> black_alloc: <span class="ty">BlackBumpAllocator</span> = <span class="ty">BlackBumpAllocator</span>;</pre>
+  <p class="note">// dealloc is intentionally empty — this is a bump allocator — if your workload never frees or frees everything at once this is O(1) allocation with zero fragmentation and zero lock contention on the fast path — the compare_exchange loop makes it safe for SMP without a spinlock</p>
+
+  <div class="expand">
+    <span class="expand-label">// expanded — bump allocation, alignment math, and lock-free SMP safety</span>
+    <p>a general-purpose allocator like <span class="hl">ptmalloc</span> or <span class="hl">jemalloc</span> maintains segregated free lists, coalesces adjacent free blocks, embeds metadata headers immediately before each allocation, and handles fragmentation across thousands of allocation sizes and lifetimes. all of that is correctness machinery for the general case. in a kernel init path or a real-time interrupt handler, you do not need the general case and you cannot afford its overhead. the bump allocator relies on contiguous blocks of memory being treated as infinite. it moves forward, taking the next chunk of RAM without consideration for what was behind it. no fragmentation means no internal list traversals.</p>
+    <p>a <span class="hl">bump allocator</span> reduces heap allocation to a single atomic integer increment. the entire heap is one contiguous array — <span class="hl">BlackHeap</span> — sitting in static memory. <span class="hl">black_offset</span> is a cursor pointing to the next free byte. to allocate N bytes: round the cursor up to the required alignment, advance it by N, return the pre-advance position as the allocation address. O(1). no free list traversal. no metadata. no fragmentation because the cursor never moves backward.</p>
+    <p>the alignment calculation <span class="hl">(current + align - 1) &amp; !(align - 1)</span> is the classic power-of-two round-up. it works because all alignment values in Rust's <span class="hl">Layout</span> are guaranteed to be powers of two. adding <span class="hl">align - 1</span> pushes the value past the next boundary, then masking with <span class="hl">!(align - 1)</span> snaps it down to it. the result is the smallest aligned address greater than or equal to the current offset. no branches. two arithmetic operations.</p>
+    <p>making this correct for multiple CPU cores simultaneously is what the <span class="hl">compare_exchange_weak</span> loop achieves. two cores might read the same <span class="hl">black_current</span> value simultaneously. both compute their <span class="hl">black_next</span>. only one can win the CAS — the atomic operation succeeds only if the value at the address still equals <span class="hl">black_current</span> at the moment of exchange. the other core's CAS fails because the value changed between load and exchange. the loser retries with the new current value. no two cores ever receive the same memory region. this is a <span class="hl">lock-free</span> algorithm: it makes progress as long as at least one thread keeps succeeding, with no mutex, no spinlock, and no blocking.</p>
+    <p><span class="hl">dealloc</span> is a no-op by design. the bump allocator is appropriate for workloads with one of two shapes: either nothing is freed until the entire arena is reset at once (per-boot init, per-request arenas that live and die together), or the working set is known at design time and the arena is sized exactly to fit it. individual frees in a bump allocator are semantically meaningless. for dynamic reclamation, you layer an object pool or buddy-allocator system over the bump structure.</p>
+  </div>
+  <div class="nav-episodes">
+    <a class="nav-ep-link" href="01-foundation.html">← 01 — the foundation</a>
+    <a class="nav-ep-link" href="03-interrupts.html">03 — interrupt handling →</a>
+  </div>
+  <p class="sig-line">// 02 / 08 — black_ptr owns its truth — BLACK0X80</p>
+</div>
+<script>
+  document.querySelectorAll('pre.rust').forEach(pre => {
+    const wrap = document.createElement('div');
+    wrap.className = 'pre-wrap';
+    pre.parentNode.insertBefore(wrap, pre);
+    wrap.appendChild(pre);
+    const btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.textContent = 'copy';
+    wrap.appendChild(btn);
+    btn.addEventListener('click', () => {
+      navigator.clipboard.writeText(pre.textContent).then(() => {
+        btn.textContent = 'copied';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = 'copy'; btn.classList.remove('copied'); }, 2000);
+      });
+    });
+  });
+</script>
+</body>
+</html>

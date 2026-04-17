@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>05 — memory layout // BLACK METAL KERNEL</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root { --bg: #080808; --bg2: #0f0f0f; --bg3: #141414; --red: #cc2020; --red2: #ff4040; --red3: #7a0f0f; --ink: #f0f0f0; --ink2: #888888; --border: #1e0808; --mono: 'Space Mono', monospace; --head: 'Syne', sans-serif; }
+  html, body { background: var(--bg); color: var(--ink); font-family: var(--head); -webkit-font-smoothing: antialiased; }
+  .art { max-width: 860px; margin: 0 auto; padding: 2rem 1.5rem 6rem; }
+  .nav-back { display: inline-flex; align-items: center; gap: 8px; font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; color: var(--ink2); text-decoration: none; text-transform: uppercase; margin-bottom: 3rem; transition: color 0.15s; }
+  .nav-back:hover { color: var(--red2); }
+  .art-subtitle { font-size: 13px; font-family: var(--mono); color: var(--red); letter-spacing: 0.08em; margin: 0 0 0.75rem; text-transform: uppercase; }
+  .art-title { font-size: clamp(28px, 5vw, 52px); font-weight: 800; line-height: 1.05; letter-spacing: -0.03em; color: var(--ink); margin: 0 0 0.75rem; text-transform: uppercase; }
+  .art-episode { font-family: var(--mono); font-size: 11px; color: var(--ink2); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 2.5rem; }
+  .tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 2.5rem; }
+  .tag { display: inline-block; font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; padding: 3px 8px; background: var(--bg2); border: 0.5px solid var(--border); border-radius: 3px; color: var(--ink2); text-transform: uppercase; }
+  .divider { width: 48px; height: 3px; background: var(--red); margin: 2.5rem 0; }
+  .section-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.2em; color: var(--red); text-transform: uppercase; margin: 0 0 0.75rem; }
+  .prose { font-family: var(--head); font-size: 16px; line-height: 1.8; color: var(--ink); margin: 0 0 1.5rem; }
+  .prose-block { border-left: 3px solid var(--red); padding-left: 1.25rem; margin: 2rem 0; }
+  
+  .pre-wrap { position: relative; }
+  .copy-btn { position: absolute; top: 0.5rem; right: 0.5rem; background: var(--bg3); border: 0.5px solid var(--border); color: var(--ink2); font-family: var(--mono); font-size: 10px; padding: 4px 8px; cursor: pointer; text-transform: uppercase; transition: all 0.15s; border-radius: 3px; letter-spacing: 0.1em; }
+  .copy-btn:hover { color: var(--red2); border-color: var(--red3); }
+  .copy-btn.copied { color: var(--bg); background: var(--red); border-color: var(--red); }
+
+  pre.rust { background: var(--bg2); border: 0.5px solid var(--border); border-left: 3px solid var(--red); border-radius: 0 6px 6px 0; padding: 1.25rem 1.5rem; overflow-x: auto; margin: 1.5rem 0 2.5rem; font-family: var(--mono); font-size: 13px; line-height: 1.7; color: var(--ink); tab-size: 4; }
+  .kw { color: var(--red); } .ty { color: var(--red2); } .fn-name { color: #cc3333; } .str { color: #ff4444; } .num { color: #ff8080; } .mac { color: #dd2222; } .attr { color: var(--ink2); font-style: italic; }
+  .note { font-family: var(--mono); font-size: 12px; color: var(--ink2); background: var(--bg2); border-radius: 4px; padding: 0.75rem 1rem; margin: 1rem 0; line-height: 1.6; }
+  .expand { border: 0.5px solid var(--border); border-left: 3px solid var(--red3); background: var(--bg2); border-radius: 0 6px 6px 0; padding: 1.1rem 1.4rem; margin: 0.5rem 0 2.5rem; font-family: var(--mono); font-size: 12.5px; line-height: 1.85; color: var(--ink2); }
+  .expand-label { font-size: 9px; letter-spacing: 0.24em; color: var(--red); text-transform: uppercase; margin-bottom: 0.7rem; display: block; }
+  .expand p { margin: 0 0 0.8rem; } .expand p:last-child { margin: 0; } .hl { color: var(--ink); font-weight: 700; }
+  .nav-episodes { display: flex; justify-content: space-between; align-items: center; margin-top: 4rem; padding-top: 2rem; border-top: 0.5px solid var(--border); gap: 1rem; flex-wrap: wrap; }
+  .nav-ep-link { font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; color: var(--ink2); text-decoration: none; text-transform: uppercase; transition: color 0.15s; }
+  .nav-ep-link:hover { color: var(--red2); }
+  .sig-line { font-family: var(--mono); font-size: 11px; color: var(--ink2); letter-spacing: 0.1em; margin-top: 4rem; border-top: 0.5px solid var(--border); padding-top: 1.5rem; }
+</style>
+</head>
+<body>
+<div class="art">
+  <a class="nav-back" href="index.html">← black metal kernel — series index</a>
+  <p class="art-subtitle">// black metal kernel — episode 05 of 08</p>
+  <h1 class="art-title">memory layout control:<br>repr(C) as a weapon</h1>
+  <p class="art-episode">// kernel programming in rust — zero-cost abstractions — no gc — no mercy</p>
+  <div class="tags">
+    <span class="tag">repr(C)</span>
+    <span class="tag">virtio</span>
+    <span class="tag">DMA</span>
+    <span class="tag">packed bounds</span>
+  </div>
+  <div class="divider"></div>
+  <p class="section-label">// 05 — structural alignment vs direct memory access</p>
+  <p class="prose">rust actively reorders fields in standard structs to eliminate padding and minimize memory footprints. this optimization is flawless for application logic but lethal when interacting with real hardware. hardware interfaces, such as DMA controllers or virtio virtual device rings, demand predictably exact bit layouts.</p>
+  <p class="prose">to enforce rigid memory structures, we wield `repr(C)`. it forces rust to align and order structs exactly as a C compiler would, matching the hardware specification byte for byte. the following code illustrates a virtq descriptor ring entry, essential for paravirtualized network and block io passing outside the cpu context.</p>
+
+<pre class="rust"><span class="attr">#[repr(C)]</span>
+<span class="attr">#[derive(Debug, Clone, Copy)]</span>
+<span class="kw">pub struct</span> <span class="ty">BlackVirtqDesc</span> {
+    <span class="kw">pub</span> black_addr:  <span class="ty">u64</span>,
+    <span class="kw">pub</span> black_len:   <span class=\"ty\">u32</span>,
+    <span class="kw">pub</span> black_flags: <span class=\"ty\">u16</span>,
+    <span class="kw">pub</span> black_next:  <span class=\"ty\">u16</span>,
+}</pre>
+
+  <div class="expand">
+    <span class="expand-label">// expanded — DMA arrays, virtqueues, and padding logic</span>
+    <p>hardware protocols like <span class="hl">virtio</span> require memory to be shared continuously between the host emulator and the guest kernel. our <span class="hl">BlackVirtqDesc</span> struct mimics the specification's 16-byte fixed-size expectation perfectly: one 64-bit address (8 bytes), one 32-bit length (4 bytes), and two 16-bit fields (2 + 2 = 4 bytes). total size: 16 bytes. had we relied on rust's default representation, the compiler could reorder the 16-bit fields, catastrophically shifting the indices that the hypervisor controller parses.</p>
+    <p>when constructing arrays of these structures for Direct Memory Access (DMA), any hidden padding would misalign the n-th element for the DMA engine, corrupting data streams. `repr(C)` disables field reordering and dictates that padding only occurs according to strict C structural boundaries. because our struct natively sums to exactly 16 bytes with its largest generic primitive being 8 bytes (u64 address), there is naturally zero internal padding and it packs compactly.</p>
+  </div>
+  
+  <div class="nav-episodes">
+    <a class="nav-ep-link" href="04-simd.html">← 04 — simd memory</a>
+    <a class="nav-ep-link" href="06-mutex.html">06 — the black mutex →</a>
+  </div>
+  <p class="sig-line">// 05 / 08 — black_ptr owns its truth — BLACK0X80</p>
+</div>
+<script>
+  document.querySelectorAll('pre.rust').forEach(pre => {
+    const wrap = document.createElement('div');
+    wrap.className = 'pre-wrap';
+    pre.parentNode.insertBefore(wrap, pre);
+    wrap.appendChild(pre);
+    const btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.textContent = 'copy';
+    wrap.appendChild(btn);
+    btn.addEventListener('click', () => {
+      navigator.clipboard.writeText(pre.textContent).then(() => {
+        btn.textContent = 'copied';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = 'copy'; btn.classList.remove('copied'); }, 2000);
+      });
+    });
+  });
+</script>
+</body>
+</html>

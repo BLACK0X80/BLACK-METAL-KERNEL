@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>08 — closing transmission // BLACK METAL KERNEL</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root { --bg: #080808; --bg2: #0f0f0f; --bg3: #141414; --red: #cc2020; --red2: #ff4040; --red3: #7a0f0f; --ink: #f0f0f0; --ink2: #888888; --border: #1e0808; --mono: 'Space Mono', monospace; --head: 'Syne', sans-serif; }
+  html, body { background: var(--bg); color: var(--ink); font-family: var(--head); -webkit-font-smoothing: antialiased; }
+  .art { max-width: 860px; margin: 0 auto; padding: 2rem 1.5rem 6rem; }
+  .nav-back { display: inline-flex; align-items: center; gap: 8px; font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; color: var(--ink2); text-decoration: none; text-transform: uppercase; margin-bottom: 3rem; transition: color 0.15s; }
+  .nav-back:hover { color: var(--red2); }
+  .art-subtitle { font-size: 13px; font-family: var(--mono); color: var(--red); letter-spacing: 0.08em; margin: 0 0 0.75rem; text-transform: uppercase; }
+  .art-title { font-size: clamp(28px, 5vw, 52px); font-weight: 800; line-height: 1.05; letter-spacing: -0.03em; color: var(--ink); margin: 0 0 0.75rem; text-transform: uppercase; }
+  .art-episode { font-family: var(--mono); font-size: 11px; color: var(--ink2); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 2.5rem; }
+  .tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 2.5rem; }
+  .tag { display: inline-block; font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; padding: 3px 8px; background: var(--bg2); border: 0.5px solid var(--border); border-radius: 3px; color: var(--ink2); text-transform: uppercase; }
+  .divider { width: 48px; height: 3px; background: var(--red); margin: 2.5rem 0; }
+  .section-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.2em; color: var(--red); text-transform: uppercase; margin: 0 0 0.75rem; }
+  .prose { font-family: var(--head); font-size: 16px; line-height: 1.8; color: var(--ink); margin: 0 0 1.5rem; }
+  .prose-block { border-left: 3px solid var(--red); padding-left: 1.25rem; margin: 2rem 0; }
+  
+  .pre-wrap { position: relative; }
+  .copy-btn { position: absolute; top: 0.5rem; right: 0.5rem; background: var(--bg3); border: 0.5px solid var(--border); color: var(--ink2); font-family: var(--mono); font-size: 10px; padding: 4px 8px; cursor: pointer; text-transform: uppercase; transition: all 0.15s; border-radius: 3px; letter-spacing: 0.1em; }
+  .copy-btn:hover { color: var(--red2); border-color: var(--red3); }
+  .copy-btn.copied { color: var(--bg); background: var(--red); border-color: var(--red); }
+
+  pre.rust { background: var(--bg2); border: 0.5px solid var(--border); border-left: 3px solid var(--red); border-radius: 0 6px 6px 0; padding: 1.25rem 1.5rem; overflow-x: auto; margin: 1.5rem 0 2.5rem; font-family: var(--mono); font-size: 13px; line-height: 1.7; color: var(--ink); tab-size: 4; }
+  .kw { color: var(--red); } .ty { color: var(--red2); } .fn-name { color: #cc3333; } .str { color: #ff4444; } .num { color: #ff8080; } .mac { color: #dd2222; } .attr { color: var(--ink2); font-style: italic; }
+  .note { font-family: var(--mono); font-size: 12px; color: var(--ink2); background: var(--bg2); border-radius: 4px; padding: 0.75rem 1rem; margin: 1rem 0; line-height: 1.6; }
+  .expand { border: 0.5px solid var(--border); border-left: 3px solid var(--red3); background: var(--bg2); border-radius: 0 6px 6px 0; padding: 1.1rem 1.4rem; margin: 0.5rem 0 2.5rem; font-family: var(--mono); font-size: 12.5px; line-height: 1.85; color: var(--ink2); }
+  .expand-label { font-size: 9px; letter-spacing: 0.24em; color: var(--red); text-transform: uppercase; margin-bottom: 0.7rem; display: block; }
+  .expand p { margin: 0 0 0.8rem; } .expand p:last-child { margin: 0; } .hl { color: var(--ink); font-weight: 700; }
+  .nav-episodes { display: flex; justify-content: space-between; align-items: center; margin-top: 4rem; padding-top: 2rem; border-top: 0.5px solid var(--border); gap: 1rem; flex-wrap: wrap; }
+  .nav-ep-link { font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; color: var(--ink2); text-decoration: none; text-transform: uppercase; transition: color 0.15s; }
+  .nav-ep-link:hover { color: var(--red2); }
+  .sig-line { font-family: var(--mono); font-size: 11px; color: var(--ink2); letter-spacing: 0.1em; margin-top: 4rem; border-top: 0.5px solid var(--border); padding-top: 1.5rem; }
+</style>
+</head>
+<body>
+<div class="art">
+  <a class="nav-back" href="index.html">← black metal kernel — series index</a>
+  <p class="art-subtitle">// black metal kernel — episode 08 of 08</p>
+  <h1 class="art-title">closing transmission:<br>what rust proves and what remains yours</h1>
+  <p class="art-episode">// kernel programming in rust — zero-cost abstractions — no gc — no mercy</p>
+  <div class="tags">
+    <span class="tag">ownership</span>
+    <span class="tag">unsafe</span>
+    <span class="tag">Send/Sync</span>
+    <span class="tag">initialization</span>
+  </div>
+  <div class="divider"></div>
+  <p class="section-label">// 08 — closing transmission</p>
+  <div class="prose-block">
+    <p class="prose">memory safety without a garbage collector is not magic — it is the acknowledgment that ownership is a real property of running systems and that expressing it explicitly in the type system costs nothing at runtime because the runtime never sees it. the borrow checker is not a limitation it is a proof engine that runs at compile time and emits machine code that is as tight as anything you would write in C. it guarantees that two cores cannot corrupt each other's allocations, that a freed pointer cannot be dereferenced, and that an interrupt handler cannot silently alias your kernel's critical data structures. rust in the kernel is not a comfort — it is accountability at machine speed.</p>
+  </div>
+  
+  <p class="prose">this philosophy manifests most purely during system initialization. before you can use the luxurious traits and threading models of safe rust, you must manually align the chaotic assembly state into rigid structure. all systems initialization relies heavily on explicit `unsafe` blocks setting memory invariants and binding raw addresses.</p>
+
+<pre class="rust"><span class="kw">pub unsafe fn</span> <span class="fn-name">black_kernel_init</span>() -> ! {
+    <span class="kw">crate</span>::black_allocator::<span class="fn-name">black_heap_init</span>();
+    
+    <span class="kw">let</span> <span class="kw">mut</span> black_pml4 = <span class="kw">crate</span>::black_paging::<span class="ty">BlackPageTable</span>::<span class="fn-name">black_zeroed</span>();
+    black_pml4.<span class="fn-name">black_map_huge</span>(<span class="num">0</span>, <span class="num">0</span>, <span class="kw">crate</span>::black_paging::<span class="ty">BLACK_PAGE_WRITABLE</span>);
+    black_pml4.<span class="fn-name">black_load</span>();
+
+    <span class="kw">crate</span>::black_interrupts::<span class="fn-name">black_idt_init</span>();
+
+    core::arch::<span class="mac">asm!</span>(<span class="str">"sti"</span>, <span class="attr">options</span>(<span class="kw">nomem</span>, <span class="kw">nostack</span>));
+
+    <span class="kw">loop</span> {
+        core::arch::<span class="mac">asm!</span>(<span class="str">"hlt"</span>, <span class="attr">options</span>(<span class="kw">nomem</span>, <span class="kw">nostack</span>));
+    }
+}</pre>
+
+  <div class="expand">
+    <span class="expand-label">// expanded — what rust proves, what unsafe admits, and what remains your problem</span>
+    <p>the borrow checker enforces one invariant: at any point in time, a piece of memory is accessible through either one exclusive mutable reference or any number of shared immutable references — never both. this single rule, enforced entirely at compile time with zero runtime representation, eliminates <span class="hl">use-after-free</span> (the owner dropped the value; no reference can outlive the owner), <span class="hl">iterator invalidation</span> (you cannot hold a reference into a collection while mutating it), and <span class="hl">data races</span> (two threads cannot simultaneously hold mutable access to the same value — the <span class="hl">Send</span> and <span class="hl">Sync</span> marker traits encode thread-safety at the type level and are checked at compile time).</p>
+    <p><span class="hl">unsafe</span> is Rust's explicit escape hatch. every <span class="hl">unsafe</span> block in this series is a signed contract between the developer and the compiler: "I am asserting that the invariants you cannot verify are upheld by this code." <span class="hl">UnsafeCell</span> in the mutex, raw pointer arithmetic in the bump allocator, inline assembly writing to hardware registers, the naked interrupt entry point — all of these require <span class="hl">unsafe</span>. the power of Rust's model is that <span class="hl">unsafe</span> is <span class="hl">contained, explicit, and auditable</span>. a security review can enumerate every unsafe block in the kernel and focus attention there. in C, every pointer dereference, every struct cast, every arithmetic operation is potentially unsafe and there is no structural way to find the dangerous ones.</p>
+    <p>what Rust does not prove: it cannot verify that your interrupt handler completes before the hardware timeout. it cannot verify that your page table does not accidentally mark kernel memory as user-accessible. it cannot verify that your spinlock is not held across an interrupt that tries to acquire the same lock — a deadlock. it cannot verify that your memory ordering choices correctly synchronize with the DMA controller. these are <span class="hl">semantic correctness properties</span> — relationships between your code and the hardware specification — that exist outside any type system. they require hardware documentation, architectural knowledge, and adversarial thinking.</p>
+    <p>Rust pushes the safety boundary as far forward as any systems language has ever pushed it. the category of bugs that caused the majority of critical kernel vulnerabilities over the past thirty years — memory corruption, use-after-free, data races — become structurally impossible to express in safe Rust and explicitly acknowledged in unsafe Rust. the rest is engineering. the kernel written in this style is harder to write than C. it is also the only kind of kernel that cannot corrupt itself silently. that difference is the entire argument.</p>
+  </div>
+
+  <div class="nav-episodes">
+    <a class="nav-ep-link" href="07-page-table.html">← 07 — page table</a>
+    <a class="nav-ep-link" href="index.html">← series index</a>
+  </div>
+  <p class="sig-line">// EOF — no comments — no apologies — no garbage collection — black_ptr owns its truth — BLACK0X80</p>
+</div>
+<script>
+  document.querySelectorAll('pre.rust').forEach(pre => {
+    const wrap = document.createElement('div');
+    wrap.className = 'pre-wrap';
+    pre.parentNode.insertBefore(wrap, pre);
+    wrap.appendChild(pre);
+    const btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.textContent = 'copy';
+    wrap.appendChild(btn);
+    btn.addEventListener('click', () => {
+      navigator.clipboard.writeText(pre.textContent).then(() => {
+        btn.textContent = 'copied';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = 'copy'; btn.classList.remove('copied'); }, 2000);
+      });
+    });
+  });
+</script>
+</body>
+</html>

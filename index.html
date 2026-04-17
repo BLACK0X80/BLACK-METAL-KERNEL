@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BLACK METAL KERNEL — BLACK0X80</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:      #080808;
+    --bg2:     #0f0f0f;
+    --bg3:     #141414;
+    --red:     #cc2020;
+    --red2:    #ff4040;
+    --red3:    #7a0f0f;
+    --ink:     #f0f0f0;
+    --ink2:    #888888;
+    --border:  #1e0808;
+    --mono:    'Space Mono', monospace;
+    --head:    'Syne', sans-serif;
+  }
+
+  html, body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--head);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 4rem 2rem 6rem;
+  }
+
+  header {
+    border-bottom: 0.5px solid var(--border);
+    padding-bottom: 3rem;
+    margin-bottom: 3rem;
+  }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--red);
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+  }
+
+  h1 {
+    font-family: var(--head);
+    font-size: clamp(36px, 7vw, 80px);
+    font-weight: 800;
+    line-height: 0.95;
+    letter-spacing: -0.04em;
+    text-transform: uppercase;
+    color: var(--ink);
+    margin-bottom: 1.5rem;
+  }
+
+  h1 span { color: var(--red); }
+
+  .tagline {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--ink2);
+    line-height: 1.8;
+    max-width: 520px;
+  }
+
+  .divider {
+    width: 48px;
+    height: 3px;
+    background: var(--red);
+    margin: 2rem 0;
+  }
+
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 1.5rem;
+  }
+
+  .tag {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border: 0.5px solid var(--border);
+    border-radius: 3px;
+    color: var(--ink2);
+    background: var(--bg2);
+  }
+
+  .series-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--red);
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+  }
+
+  .episodes {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  }
+
+  .episode {
+    display: flex;
+    align-items: stretch;
+    text-decoration: none;
+    background: var(--bg2);
+    border: 0.5px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    transition: border-color 0.15s, background 0.15s;
+  }
+
+  .episode:hover {
+    border-color: var(--red3);
+    background: var(--bg3);
+  }
+
+  .episode:hover .ep-num { background: var(--red); color: #fff; }
+
+  .ep-num {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: var(--red);
+    background: var(--bg3);
+    border-right: 0.5px solid var(--border);
+    padding: 1.5rem 1.25rem;
+    display: flex;
+    align-items: center;
+    min-width: 70px;
+    justify-content: center;
+    transition: background 0.15s, color 0.15s;
+    flex-shrink: 0;
+  }
+
+  .ep-body {
+    padding: 1.25rem 1.5rem;
+    flex: 1;
+  }
+
+  .ep-title {
+    font-family: var(--head);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 0.4rem;
+    letter-spacing: -0.01em;
+  }
+
+  .ep-desc {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink2);
+    line-height: 1.6;
+  }
+
+  .ep-tags {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 0.75rem;
+  }
+
+  .ep-tag {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 2px 7px;
+    border: 0.5px solid var(--red3);
+    border-radius: 2px;
+    color: var(--red2);
+  }
+
+  .ep-arrow {
+    display: flex;
+    align-items: center;
+    padding: 0 1.25rem;
+    color: var(--ink2);
+    font-size: 18px;
+    flex-shrink: 0;
+    transition: color 0.15s;
+  }
+
+  .episode:hover .ep-arrow { color: var(--red2); }
+
+  .coming-soon {
+    display: flex;
+    align-items: stretch;
+    background: var(--bg);
+    border: 0.5px dashed var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    opacity: 0.5;
+  }
+
+  .soon-num {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink2);
+    background: var(--bg);
+    border-right: 0.5px dashed var(--border);
+    padding: 1.25rem;
+    display: flex;
+    align-items: center;
+    min-width: 70px;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .soon-body {
+    padding: 1.25rem 1.5rem;
+    flex: 1;
+  }
+
+  .soon-title {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--ink2);
+    margin-bottom: 0.3rem;
+  }
+
+  .soon-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--ink2);
+    letter-spacing: 0.1em;
+  }
+
+  footer {
+    margin-top: 5rem;
+    padding-top: 2rem;
+    border-top: 0.5px solid var(--border);
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink2);
+    letter-spacing: 0.08em;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  footer a {
+    color: var(--red);
+    text-decoration: none;
+  }
+
+  footer a:hover { color: var(--red2); }
+
+  @media (max-width: 600px) {
+    .ep-arrow { display: none; }
+  }
+
+  .pre-wrap { position: relative; }
+  .copy-btn { position: absolute; top: 0.5rem; right: 0.5rem; background: var(--bg3); border: 0.5px solid var(--border); color: var(--ink2); font-family: var(--mono); font-size: 10px; padding: 4px 8px; cursor: pointer; text-transform: uppercase; transition: all 0.15s; border-radius: 3px; letter-spacing: 0.1em; }
+  .copy-btn:hover { color: var(--red2); border-color: var(--red3); }
+  .copy-btn.copied { color: var(--bg); background: var(--red); border-color: var(--red); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <p class="eyebrow">// BLACK0X80 — kernel series — rust — no gc — no mercy</p>
+    <h1>black<br>metal<br><span>kernel</span></h1>
+    <p class="tagline">a series on writing kernel code in rust — zero-cost abstractions — bare metal — all variables prefixed black — no comments in the code — no hand-holding — just the machine and the type system</p>
+    <div class="divider"></div>
+    <div class="tags">
+      <span class="tag">no_std</span>
+      <span class="tag">no_main</span>
+      <span class="tag">unsafe</span>
+      <span class="tag">repr(C)</span>
+      <span class="tag">asm!</span>
+      <span class="tag">x86-64</span>
+      <span class="tag">spinlock</span>
+      <span class="tag">SIMD</span>
+      <span class="tag">virtio</span>
+    </div>
+  </header>
+
+  <p class="series-label">// series — 08 episodes</p>
+
+  <div class="episodes">
+
+    <a class="episode" href="01-foundation.html">
+      <div class="ep-num">// 01</div>
+      <div class="ep-body">
+        <div class="ep-title">the foundation — no_std and raw control</div>
+        <div class="ep-desc">stripping the standard library — BlackSpinlock — two-phase TTAS — atomic acquire/release</div>
+        <div class="ep-tags">
+          <span class="ep-tag">no_std</span>
+          <span class="ep-tag">AtomicBool</span>
+          <span class="ep-tag">spinlock</span>
+        </div>
+      </div>
+      <div class="ep-arrow">→</div>
+    </a>
+
+    <a class="episode" href="02-allocator.html">
+      <div class="ep-num">// 02</div>
+      <div class="ep-body">
+        <div class="ep-title">custom allocator — owning the heap from birth</div>
+        <div class="ep-desc">BlackBumpAllocator — lock-free SMP allocation — alignment arithmetic — GlobalAlloc</div>
+        <div class="ep-tags">
+          <span class="ep-tag">GlobalAlloc</span>
+          <span class="ep-tag">AtomicUsize</span>
+          <span class="ep-tag">bump alloc</span>
+        </div>
+      </div>
+      <div class="ep-arrow">→</div>
+    </a>
+
+    <a class="episode" href="03-interrupts.html">
+      <div class="ep-num">// 03</div>
+      <div class="ep-body">
+        <div class="ep-title">interrupt handling — when hardware screams at you</div>
+        <div class="ep-desc">BlackIdtEntry — naked functions — register context save/restore — EOI protocol</div>
+        <div class="ep-tags">
+          <span class="ep-tag">IDT</span>
+          <span class="ep-tag">naked fn</span>
+          <span class="ep-tag">iretq</span>
+        </div>
+      </div>
+      <div class="ep-arrow">→</div>
+    </a>
+
+    <a class="episode" href="04-simd.html">
+      <div class="ep-num">// 04</div>
+      <div class="ep-body">
+        <div class="ep-title">SIMD memory operations — asm! on the critical path</div>
+        <div class="ep-desc">AVX2 zeroing — non-temporal stores — movnti — sfence — cache pollution prevention</div>
+        <div class="ep-tags">
+          <span class="ep-tag">AVX2</span>
+          <span class="ep-tag">movnti</span>
+          <span class="ep-tag">sfence</span>
+        </div>
+      </div>
+      <div class="ep-arrow">→</div>
+    </a>
+
+    <a class="episode" href="05-memory-layout.html">
+      <div class="ep-num">// 05</div>
+      <div class="ep-body">
+        <div class="ep-title">memory layout control — repr(C) as a weapon</div>
+        <div class="ep-desc">BlackVirtqueue — virtio descriptor ring — packed structs — hardware-visible memory layout</div>
+        <div class="ep-tags">
+          <span class="ep-tag">repr(C)</span>
+          <span class="ep-tag">virtio</span>
+          <span class="ep-tag">DMA</span>
+        </div>
+      </div>
+      <div class="ep-arrow">→</div>
+    </a>
+
+    <a class="episode" href="06-mutex.html">
+      <div class="ep-num">// 06</div>
+      <div class="ep-body">
+        <div class="ep-title">the black_mutex — a lock that earns its existence</div>
+        <div class="ep-desc">BlackMutex — UnsafeCell — Deref/DerefMut — RAII guard — Drop with Release semantics</div>
+        <div class="ep-tags">
+          <span class="ep-tag">UnsafeCell</span>
+          <span class="ep-tag">RAII</span>
+          <span class="ep-tag">Drop</span>
+        </div>
+      </div>
+      <div class="ep-arrow">→</div>
+    </a>
+
+    <a class="episode" href="07-page-table.html">
+      <div class="ep-num">// 07</div>
+      <div class="ep-body">
+        <div class="ep-title">the page table — direct address space construction</div>
+        <div class="ep-desc">BlackPageTable — huge pages — CR3 — x86-64 paging hierarchy — compile-time BSS init</div>
+        <div class="ep-tags">
+          <span class="ep-tag">CR3</span>
+          <span class="ep-tag">paging</span>
+          <span class="ep-tag">huge pages</span>
+        </div>
+      </div>
+      <div class="ep-arrow">→</div>
+    </a>
+
+    <a class="episode" href="08-closing.html">
+      <div class="ep-num">// 08</div>
+      <div class="ep-body">
+        <div class="ep-title">closing transmission — what rust proves and what remains yours</div>
+        <div class="ep-desc">the borrow checker as proof engine — unsafe boundaries — what no type system can verify</div>
+        <div class="ep-tags">
+          <span class="ep-tag">ownership</span>
+          <span class="ep-tag">unsafe</span>
+          <span class="ep-tag">Send/Sync</span>
+        </div>
+      </div>
+      <div class="ep-arrow">→</div>
+    </a>
+
+  </div>
+
+  <footer>
+    <span>// BLACK0X80 — <a href="https://github.com/BLACK0X80/BLACK-METAL-KERNEL">github</a> — black metal kernel series</span>
+    <span>// no gc — no mercy — no apologies</span>
+  </footer>
+
+</div>
+<script>
+  document.querySelectorAll('pre.rust').forEach(pre => {
+    const wrap = document.createElement('div');
+    wrap.className = 'pre-wrap';
+    pre.parentNode.insertBefore(wrap, pre);
+    wrap.appendChild(pre);
+    const btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.textContent = 'copy';
+    wrap.appendChild(btn);
+    btn.addEventListener('click', () => {
+      navigator.clipboard.writeText(pre.textContent).then(() => {
+        btn.textContent = 'copied';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = 'copy'; btn.classList.remove('copied'); }, 2000);
+      });
+    });
+  });
+</script>
+</body>
+</html>

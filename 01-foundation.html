@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>01 — the foundation // BLACK METAL KERNEL</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #080808; --bg2: #0f0f0f; --bg3: #141414;
+    --red: #cc2020; --red2: #ff4040; --red3: #7a0f0f;
+    --ink: #f0f0f0; --ink2: #888888; --border: #1e0808;
+    --mono: 'Space Mono', monospace; --head: 'Syne', sans-serif;
+  }
+  html, body { background: var(--bg); color: var(--ink); font-family: var(--head); -webkit-font-smoothing: antialiased; }
+  .art { max-width: 860px; margin: 0 auto; padding: 2rem 1.5rem 6rem; }
+  .nav-back { display: inline-flex; align-items: center; gap: 8px; font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; color: var(--ink2); text-decoration: none; text-transform: uppercase; margin-bottom: 3rem; transition: color 0.15s; }
+  .nav-back:hover { color: var(--red2); }
+  .art-subtitle { font-size: 13px; font-family: var(--mono); color: var(--red); letter-spacing: 0.08em; margin: 0 0 0.75rem; text-transform: uppercase; }
+  .art-title { font-size: clamp(28px, 5vw, 52px); font-weight: 800; line-height: 1.05; letter-spacing: -0.03em; color: var(--ink); margin: 0 0 0.75rem; text-transform: uppercase; }
+  .art-episode { font-family: var(--mono); font-size: 11px; color: var(--ink2); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 2.5rem; }
+  .tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 2.5rem; }
+  .tag { display: inline-block; font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; padding: 3px 8px; background: var(--bg2); border: 0.5px solid var(--border); border-radius: 3px; color: var(--ink2); text-transform: uppercase; }
+  .divider { width: 48px; height: 3px; background: var(--red); margin: 2.5rem 0; }
+  .section-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.2em; color: var(--red); text-transform: uppercase; margin: 0 0 0.75rem; }
+  .prose { font-family: var(--head); font-size: 16px; line-height: 1.8; color: var(--ink); margin: 0 0 1.5rem; }
+  .prose-block { border-left: 3px solid var(--red); padding-left: 1.25rem; margin: 2rem 0; }
+  
+  .pre-wrap { position: relative; }
+  .copy-btn { position: absolute; top: 0.5rem; right: 0.5rem; background: var(--bg3); border: 0.5px solid var(--border); color: var(--ink2); font-family: var(--mono); font-size: 10px; padding: 4px 8px; cursor: pointer; text-transform: uppercase; transition: all 0.15s; border-radius: 3px; letter-spacing: 0.1em; }
+  .copy-btn:hover { color: var(--red2); border-color: var(--red3); }
+  .copy-btn.copied { color: var(--bg); background: var(--red); border-color: var(--red); }
+  
+  pre.rust { background: var(--bg2); border: 0.5px solid var(--border); border-left: 3px solid var(--red); border-radius: 0 6px 6px 0; padding: 1.25rem 1.5rem; overflow-x: auto; margin: 1.5rem 0 2.5rem; font-family: var(--mono); font-size: 13px; line-height: 1.7; color: var(--ink); tab-size: 4; }
+  .kw { color: var(--red); } .ty { color: var(--red2); } .fn-name { color: #cc3333; } .str { color: #ff4444; } .num { color: #ff8080; } .mac { color: #dd2222; } .attr { color: var(--ink2); font-style: italic; }
+  .note { font-family: var(--mono); font-size: 12px; color: var(--ink2); background: var(--bg2); border-radius: 4px; padding: 0.75rem 1rem; margin: 1rem 0; line-height: 1.6; }
+  .expand { border: 0.5px solid var(--border); border-left: 3px solid var(--red3); background: var(--bg2); border-radius: 0 6px 6px 0; padding: 1.1rem 1.4rem; margin: 0.5rem 0 2.5rem; font-family: var(--mono); font-size: 12.5px; line-height: 1.85; color: var(--ink2); }
+  .expand-label { font-size: 9px; letter-spacing: 0.24em; color: var(--red); text-transform: uppercase; margin-bottom: 0.7rem; display: block; }
+  .expand p { margin: 0 0 0.8rem; } .expand p:last-child { margin: 0; } .hl { color: var(--ink); font-weight: 700; }
+  .nav-episodes { display: flex; justify-content: space-between; align-items: center; margin-top: 4rem; padding-top: 2rem; border-top: 0.5px solid var(--border); gap: 1rem; flex-wrap: wrap; }
+  .nav-ep-link { font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; color: var(--ink2); text-decoration: none; text-transform: uppercase; transition: color 0.15s; }
+  .nav-ep-link:hover { color: var(--red2); }
+  .sig-line { font-family: var(--mono); font-size: 11px; color: var(--ink2); letter-spacing: 0.1em; margin-top: 4rem; border-top: 0.5px solid var(--border); padding-top: 1.5rem; }
+</style>
+</head>
+<body>
+<div class="art">
+  <a class="nav-back" href="index.html">← black metal kernel — series index</a>
+  <p class="art-subtitle">// black metal kernel — episode 01 of 08</p>
+  <h1 class="art-title">the foundation:<br>no_std and raw control</h1>
+  <p class="art-episode">// kernel programming in rust — zero-cost abstractions — no gc — no mercy</p>
+  <div class="tags">
+    <span class="tag">no_std</span>
+    <span class="tag">no_main</span>
+    <span class="tag">AtomicBool</span>
+    <span class="tag">spinlock</span>
+    <span class="tag">TTAS</span>
+    <span class="tag">acquire/release</span>
+  </div>
+  <div class="divider"></div>
+  <p class="section-label">// 00 — the philosophy</p>
+  <p class="prose">the kernel does not ask permission the kernel does not borrow check its feelings the kernel owns memory the way a black hole owns light — absolutely and without negotiation rust enters this domain not as a guest but as a replacement for the uncertainty that c left behind and what rust offers is not safety rails but rather a different kind of violence — the violence of types that guarantee invariants at compile time so that the runtime never has to guess</p>
+  <p class="prose">zero-cost abstractions are not marketing they are a contract between you and the compiler — if you express a higher-level concept the machine code produced must be identical to what you would have written by hand if it is not then the abstraction costs something and in kernel space cost is death measured in microseconds and cache misses and interrupt latency</p>
+  <div class="expand">
+    <span class="expand-label">// expanded — why rust belongs in the kernel</span>
+    <p>the kernel is the first code that executes when a machine boots — before any userspace process, before libc, before the scheduler itself exists. it speaks directly to hardware: it manages physical memory page by page, handles CPU exceptions, schedules every thread that will ever run on the system. a bug here does not throw an exception and unwind a stack. it corrupts state silently, or triggers a hard fault that locks the machine. there is no recovery path. there is no second chance. C dominated this space for fifty years and it earned its position — it compiles to tight, predictable machine code, it has no hidden runtime, and it maps directly onto the hardware memory model. but C carries a structural flaw: it gives you a pointer and trusts you completely. <span class="hl">use-after-free</span> (accessing memory after the owner freed it), <span class="hl">double-free</span> (freeing the same allocation twice), <span class="hl">data races between CPU cores</span> (two cores writing the same location without synchronization), <span class="hl">buffer overflows into adjacent structs</span> — all of these are valid C. all of them compile without warnings. all of them are responsible for the overwhelming majority of kernel CVEs across every major operating system.</p>
+    <p>Rust's answer is not a runtime check and not a garbage collector. it is a type system that makes these mistakes <span class="hl">structurally impossible to express</span>. the compiler refuses to produce a binary if ownership rules are violated. the resulting machine code is identical to what you would have written in C. the safety cost at runtime is exactly zero — because the runtime never sees it. it is entirely a compile-time property. <span class="hl">zero-cost abstractions</span> means exactly this: when you write a generic type or a higher-order function, the compiler monomorphizes it — specializes it for each concrete type it is used with — and inlines aggressively. the CPU never executes generics. it executes flat, specialized machine code indistinguishable from what a skilled C programmer would have written by hand. if the abstraction costs anything at runtime, it is not zero-cost and Rust's contract with you is broken. in kernel space, where you measure latency in nanoseconds and cache pressure in bytes, this contract is the only kind worth signing.</p>
+  </div>
+  <div class="divider"></div>
+  <p class="section-label">// 01 — the foundation: no_std and raw control</p>
+  <div class="prose-block">
+    <p class="prose">before you write a single line of kernel code you declare war on the standard library — you strip it away and you are left with what the machine actually is which is registers and memory and nothing else this is where rust becomes extraordinary because its core type system survives the stripping intact — ownership borrowing lifetimes all of it remains and you get to use them with absolute hardware</p>
+  </div>
+<pre class="rust"><span class="attr">#![no_std]
+#![no_main]
+#![feature(asm_const)]</span>
+
+<span class="kw">use</span> core::sync::atomic::{<span class="ty">AtomicBool</span>, <span class="ty">Ordering</span>};
+
+<span class="attr">#[repr(C)]</span>
+<span class="kw">pub struct</span> <span class="ty">BlackSpinlock</span> {
+    black_flag: <span class="ty">AtomicBool</span>,
+}
+
+<span class="kw">impl</span> <span class="ty">BlackSpinlock</span> {
+    <span class="kw">pub const fn</span> <span class="fn-name">black_new</span>() -> <span class="ty">Self</span> {
+        <span class="ty">BlackSpinlock</span> {
+            black_flag: <span class="ty">AtomicBool</span>::<span class="fn-name">new</span>(<span class="kw">false</span>),
+        }
+    }
+
+    <span class="attr">#[inline(always)]</span>
+    <span class="kw">pub fn</span> <span class="fn-name">black_acquire</span>(&<span class="kw">self</span>) {
+        <span class="kw">while</span> <span class="kw">self</span>.black_flag
+            .<span class="fn-name">compare_exchange_weak</span>(<span class="kw">false</span>, <span class="kw">true</span>, <span class="ty">Ordering</span>::<span class="ty">Acquire</span>, <span class="ty">Ordering</span>::<span class="ty">Relaxed</span>)
+            .<span class="fn-name">is_err</span>()
+        {
+            <span class="kw">while</span> <span class="kw">self</span>.black_flag.<span class="fn-name">load</span>(<span class="ty">Ordering</span>::<span class="ty">Relaxed</span>) {
+                core::hint::<span class="fn-name">spin_loop</span>();
+            }
+        }
+    }
+
+    <span class="attr">#[inline(always)]</span>
+    <span class="kw">pub fn</span> <span class="fn-name">black_release</span>(&<span class="kw">self</span>) {
+        <span class="kw">self</span>.black_flag.<span class="fn-name">store</span>(<span class="kw">false</span>, <span class="ty">Ordering</span>::<span class="ty">Release</span>);
+    }
+}
+
+<span class="kw">unsafe impl</span> <span class="ty">Send</span> <span class="kw">for</span> <span class="ty">BlackSpinlock</span> {}
+<span class="kw">unsafe impl</span> <span class="ty">Sync</span> <span class="kw">for</span> <span class="ty">BlackSpinlock</span> {}</pre>
+  <p class="note">// the two-phase spin is not decoration — outer loop pays the compare_exchange cost once on contention then the inner relaxed load burns no bus bandwidth until the lock frees — this is the difference between a spinlock that works and one that serializes your entire memory bus</p>
+  <div class="expand">
+    <span class="expand-label">// expanded — no_std, atomics, and the two-phase spinlock dissected</span>
+    <p><span class="hl">#![no_std]</span> is a declaration of intent: you are telling the Rust compiler to strip the standard library entirely. gone are <span class="hl">String</span>, <span class="hl">Vec</span>, <span class="hl">HashMap</span>, <span class="hl">println!</span>, and every abstraction that requires a heap allocator or an OS beneath it. what remains is <span class="hl">core</span> — the pure language primitives: ownership, lifetimes, traits, generics, atomic types. the machine does not vanish. its representation in Rust's type system does not vanish either. only the comfortable userspace wrappers are gone. <span class="hl">#![no_main]</span> removes the assumption that your entry point is the standard <span class="hl">fn main()</span>. in a kernel, the entry point is determined by the linker script and called by the bootloader. you define it yourself — often a naked extern function at a fixed address — and you are responsible for everything that happens before it, including setting up the stack pointer and zeroing the BSS segment.</p>
+    <p>a <span class="hl">spinlock</span> is the simplest possible mutual exclusion primitive: one boolean. locked or unlocked. a thread that wants the lock spins — burns CPU cycles in a tight loop — until it can claim the bit. no scheduler involvement. no context switch. this is the right choice in kernel contexts where blocking (yielding to a scheduler) is either impossible (the scheduler is not yet initialized) or too expensive (you are inside an interrupt handler).</p>
+    <p>the <span class="hl">two-phase design</span> matters on SMP systems. the <span class="hl">outer loop</span> uses <span class="hl">compare_exchange_weak</span> — an atomic read-modify-write that attempts to flip false to true. on x86-64 this compiles to <span class="hl">LOCK CMPXCHG</span>, which asserts exclusive ownership of the cache line, broadcasts an invalidation to all other cores, and waits for acknowledgment. this generates coherency traffic on the memory bus. if every spinning core repeatedly fires this instruction, every failed attempt generates a bus storm — the interconnect becomes the bottleneck, not the work. the <span class="hl">inner loop</span> fixes this: switch to a plain relaxed load once the CAS fails. reads do not require cache-line exclusivity — the line stays shared across all spinning cores, no bus traffic. the expensive outer CAS is only re-entered when the load detects the lock actually changed state. this is the TTAS (Test-and-Test-and-Set) pattern and it is the correct spinlock implementation for any multi-core system.</p>
+    <p><span class="hl">Ordering::Acquire</span> on the successful CAS creates a memory barrier: no load or store that appears after the CAS in source order can be reordered before it by the CPU or the compiler. the lock acquisition is a hard ordering fence. <span class="hl">Ordering::Release</span> on the store in <span class="hl">release()</span> creates the matching barrier in the other direction: everything written inside the critical section is visible to the next thread that acquires before it reads the lock state as free. these two orderings together form the standard acquire-release protocol that underpins every correct concurrent data structure.</p>
+  </div>
+  <div class="nav-episodes">
+    <a class="nav-ep-link" href="index.html">← series index</a>
+    <a class="nav-ep-link" href="02-allocator.html">02 — custom allocator →</a>
+  </div>
+  <p class="sig-line">// 01 / 08 — black_ptr owns its truth — BLACK0X80</p>
+</div>
+<script>
+  document.querySelectorAll('pre.rust').forEach(pre => {
+    const wrap = document.createElement('div');
+    wrap.className = 'pre-wrap';
+    pre.parentNode.insertBefore(wrap, pre);
+    wrap.appendChild(pre);
+    const btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.textContent = 'copy';
+    wrap.appendChild(btn);
+    btn.addEventListener('click', () => {
+      navigator.clipboard.writeText(pre.textContent).then(() => {
+        btn.textContent = 'copied';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = 'copy'; btn.classList.remove('copied'); }, 2000);
+      });
+    });
+  });
+</script>
+</body>
+</html>
