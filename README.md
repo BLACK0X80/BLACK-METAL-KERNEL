@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://capsule-render.vercel.app/api?type=transparent&color=gradient&customColorList=000000,8B0000,FF0000,8B0000,000000&height=120&section=header&text=BLACK%20METAL%20KERNEL&fontSize=85&fontColor=ff0000&fontAlignY=50" width="100%"/>
+<img src="https://capsule-render.vercel.app/api?type=transparent&color=gradient&customColorList=000000,8B0000,FF0000,8B0000,000000&height=120&section=header&text=BLACK%20METAL%20KERNEL&fontSize=50&fontColor=ff0000&fontAlignY=50" width="100%"/>
 
 <p align="center">
   <img src="https://readme-typing-svg.demolab.com?font=Space+Mono&weight=700&size=24&duration=3000&pause=1000&color=FF0000&center=true&vCenter=true&multiline=true&width=800&height=100&lines=BARE-METAL+EXECUTION+REDEFINED;ZERO+COMMENTS+%7C+ZERO+GC+%7C+ABSOLUTE+CONTROL;x86-64+ARCHITECTURE" alt="Typing Animation" />
